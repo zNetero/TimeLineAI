@@ -1,5 +1,5 @@
 from langchain_openai import ChatOpenAI
-from langchain import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 import os
 from dotenv import load_dotenv
 
@@ -7,9 +7,10 @@ load_dotenv()
 
 class FutureEngine:
     def __init__(self):
-        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7)
+        self.llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0.7, model_kwargs={"response_format": {"type": "json_object"}})
+        
         self.template = ChatPromptTemplate.from_messages([
-    ("system", """Você é um Simulador de Linhas do Tempo extremamente realista, analítico e direto.
+            ("system", """Você é um Simulador de Linhas do Tempo extremamente realista, analítico e direto.
 
 Sua função é prever consequências reais baseadas no comportamento humano, sem ser motivacional vazio ou genérico.
 
@@ -40,28 +41,33 @@ Com base na entrada do usuário, gere DOIS cenários:
 
 FORMATO DE RESPOSTA (OBRIGATÓRIO JSON):
 
-{
-  "cenario_negativo": {
+{{
+  "cenario_negativo": {{
     "1_mes": "...",
     "3_meses": "...",
     "6_meses": "...",
     "consequencias": "..."
-  },
-  "cenario_positivo": {
+  }},
+  "cenario_positivo": {{
     "1_mes": "...",
     "3_meses": "...",
     "6_meses": "...",
     "ganhos": "..."
-  },
+  }},
   "estimativa_tempo": "..."
-}
+}}
 
 NÃO inclua nenhum texto fora do JSON.
 """),
-    ("human", "{user_input}")
-])
+            ("human", "{user_input}")
+        ])
     
-    def generate_future(self, user_input: str):
+    def generate_future(self, user_input: str, history: str = ""):
+        
+        full_context = f"Histórico recente do usuário: {history}\nNova decisão atual: {user_input}"
+        
         chain = self.template | self.llm
-        response = chain.invoke({ "user_input": user_input })
+        
+        response = chain.invoke({ "user_input": full_context })
+        
         return response.content
