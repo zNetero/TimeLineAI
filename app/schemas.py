@@ -7,8 +7,8 @@ class SimulationCreate(BaseModel):
 class SimulationResponse(BaseModel):
     id: int
     user_input: str
-    negative_scenario: str
-    positive_scenario: str
+    negative_scenario: dict
+    positive_scenario: dict
     timestamp: datetime
 
     class Config:
