@@ -10,6 +10,7 @@ class SimulationResponse(BaseModel):
     negative_scenario: dict
     positive_scenario: dict
     timestamp: datetime
+    estimativa_tempo: str
 
     class Config:
         from_attributes = True
