@@ -59,11 +59,16 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
     setIsTyping(true);
     
     try {
+      const userHistory = messages
+        .filter((m) => m.role === "user")
+        .map((m) => m.content)
+        .join(" ");
+
       
       const response = await fetch("http://127.0.0.1:8000/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_decision: userMessage }),
+        body: JSON.stringify({ user_decision: userMessage, history: userHistory }),
       });
 
       if (!response.ok) throw new Error("Erro na conexão com o Oráculo.");

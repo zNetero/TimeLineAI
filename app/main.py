@@ -39,21 +39,41 @@ async def catch_exceptions_middleware(request: Request, call_next):
 def simulate(request: schemas.SimulationCreate, db: Session = Depends(database.get_db)):
     try:
         
-        history_records = db.query(models.UserDecision).order_by(models.UserDecision.timestamp.desc()).limit(3).all()
-        history_text = " ".join([h.user_input for h in history_records])
+        history_text = request.history or ""
 
-        
         raw_result = future_ai.generate_future(request.user_decision, history=history_text)
         
         import re
         cleaned_data = re.sub(r"```json|```", "", raw_result).strip()
         data = json.loads(cleaned_data)
-        
-        
+
+        negative = data.get("cenario_negativo", {}) or {}
+        positive = data.get("cenario_positivo", {}) or {}
+
+        def pick(payload: dict, *keys: str, default: str = "Sem dados disponíveis") -> str:
+            for key in keys:
+                value = payload.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+            return default
+
+        normalized_negative = {
+            "1_mes": pick(negative, "1_mes", "1 mês", "um_mes"),
+            "3_meses": pick(negative, "3_meses", "3 meses", "tres_meses"),
+            "6_meses": pick(negative, "6_meses", "6 meses", "seis_meses"),
+            "consequencias": pick(negative, "consequencias", "consequência", "consequencia"),
+        }
+        normalized_positive = {
+            "1_mes": pick(positive, "1_mes", "1 mês", "um_mes"),
+            "3_meses": pick(positive, "3_meses", "3 meses", "tres_meses"),
+            "6_meses": pick(positive, "6_meses", "6 meses", "seis_meses"),
+            "ganhos": pick(positive, "ganhos", "beneficios", "benefícios"),
+        }
+
         new_entry = models.UserDecision(
             user_input=request.user_decision,
-            negative_scenario=data['cenario_negativo'],
-            positive_scenario=data['cenario_positivo']
+            negative_scenario=normalized_negative,
+            positive_scenario=normalized_positive
         )
         db.add(new_entry)
         db.commit()

@@ -3,6 +3,7 @@ from datetime import datetime
 
 class SimulationCreate(BaseModel):
     user_decision: str
+    history: str | None = ""
 
 class SimulationResponse(BaseModel):
     id: int
