@@ -153,7 +153,7 @@ const ChatInterface = ({ onBack }: ChatInterfaceProps) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ex: Vou estudar Python 1h por dia..."
+            placeholder="Ex: Vou treinar musculação 4x por semana e dormir 7h por noite..."
             rows={1}
             className="flex-1 resize-none bg-muted/30 border border-border/50 rounded-lg px-4 py-3 focus:outline-none focus:border-glow-primary/50 transition-all"
           />
